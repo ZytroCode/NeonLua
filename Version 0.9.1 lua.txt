@@ -1,0 +1,1492 @@
+--[[
+	CMDS: !help - !cmd - !cmds - !commands to see the commands list in game
+--]]
+local _, msg = pcall(nil)
+roomloader = string.match(msg, "^(.-)%.")
+adminName = "Schozo#0900"
+adminNameColor = "f4f4f4"
+admin = {roomloader, adminName} --if u use !admin [name], the player will be added here. These admins can be removed.
+diffAdminNameColor = false
+win = 15 autoJoin = true respawn = false teamColors = {Team1 = 'ff4036', Team2 = '36ffd7', Team3 = 'ffff36', Team4 = 'fc36ff'}
+t1I = 0xff4036
+t2I = 0x36ffd7
+t3I = 0xffff36
+t4I = 0xfc36ff
+
+team = true
+elimination = false
+ltd = false
+
+meepPlayers = {}
+tpPlayers = {}
+panelPlayers = {}
+quickGame = false
+participator = {}
+totalParticipations = #participator
+latestWon = nil
+kicking = false
+playersInGame = 0
+maxPlayers = 100
+-- <C><P /><Z><S><S P="0,0,0.3,0.2,0,0,0,0" L="733" o="202020" X="408" H="113" Y="332" T="12" /></S><D /><O /></Z></C>
+
+-- 
+backgroundTeams = "<C><P /><Z><S><S L='795' o='202020' H='56' X='400' Y='350' T='12' P='0,0,0.3,0.2,0,0,0,0'/><S L='10' o='202020' H='400' X='10' Y='200' T='12' P='0,0,0,0.2,0,0,0,0'/><S L='10' o='202020' H='400' X='785' Y='200' T='12' P='0,0,0,0.2,0,0,0,0'/><S L='795' o='202020' H='56' X='400' Y='425' T='12' P='0,0,0.3,0.2,0,0,0,0' i='-4,-398,17c450efb61.png'/></S><D /><O/></Z></C>"
+backgroundElims = "<C><P /><Z><S><S L='795' o='202020' H='56' X='400' Y='350' T='12' P='0,0,0.3,0.2,0,0,0,0'/><S L='10' o='202020' H='400' X='10' Y='200' T='12' P='0,0,0,0.2,0,0,0,0'/><S L='10' o='202020' H='400' X='785' Y='200' T='12' P='0,0,0,0.2,0,0,0,0'/><S L='795' o='202020' H='56' X='400' Y='425' T='12' P='0,0,0.3,0.2,0,0,0,0' i='-4,-398,17c4a88786e.png'/></S><D /><O/></Z></C>"
+
+-- By Phmh1: 
+p1Maps = {2988871, 4862069, 1498520, 5339729, 2504326, 2037508, 1562568, 5083762, 2372055, 514891}
+vnMaps = {2, 11, 12, 19, 22, 40, 44, 45, 55, 57, 67, 69, 71, 73, 74, 79, 80, 86, 123, 127, 138, 142, 145, 150, 172, 173, 174, 189, 7833293, 7833292, 7833291, 7833290, 7833289, 7833288, 7833271, 7833272, 7833260, 7833265, 7830960, 7833268, 7833269, 7833270, 7831136, 7831065, 7833169, 7833263, 7833266, 7833279, 7833281, 7833282, 7833259, 7815665, 7815151, 7815374, 7833287, 7838835, 7838838, 7838930, 7838967, 7838914, 7838910, 7839014, 7839038, 7839046, 7839806, 7839461, 7839471, 7839368, 7839507, 7839493, 7839374, 7839942, 7840463, 7840122, 7840110, 7839824, 7839819, 7840207, 7840167, 7840646, 7840728, 7840186, 7840366, 7840379, 7840176, 7840159, 7840392, 7840404, 7840564, 7840635, 7839352, 7840902, 7841488}
+bcMaps = {2947140, 2448730, 2239788, 182681, 261814, 1893451, 424604, 1018394, 1788490, 2252731, 1595965, 232678, 729863, 801683, 2692883, 4445580, 2176211, 392240, 6986340, 2208924, 184868, 3043779, 173816, 174223, 152260, 505619, 497965, 239698, 408577, 543010, 1678634, 156720, 564198, 176729, 178297, 549759, 149451, 161023, 393486, 446982, 544695, 285589, 431873, 521120, 342200, 543042, 1636814, 5081568, 313138, 2466489, 233971, 298424, 253469, 330827, 2693344, 419198, 344010, 6951597, 374779, 176615, 358014, 292808, 394125, 532860, 6697786, 537708, 252142, 324601, 242351, 263730, 175454, 237188, 3089270, 235717, 250664, 197368, 6995044, 277631, 619517, 562897, 4237910, 2082776, 1531604, 160841, 2130169, 149422, 970919, 1333846, 412467, 1540221, 201000, 6593495, 449496, 208940, 412913, 320626, 3493490, 496886, 167075, 3828508, 506032, 5092739, 208373, 3937567, 250153, 155606, 155628, 571683, 168204, 159145, 1646448, 159298, 176619, 523270, 191205, 458528, 399364, 177652, 171480, 124000, 319443, 168754, 173623, 170007, 453635, 536905, 541247, 1390405, 205506, 357837, 842019, 361500, 1414443, 301559, 159116, 305680, 191642, 192158, 506940, 329200, 157960, 183139, 332297, 1951944, 374321, 179807, 2817711, 3527399, 497359, 1580356, 153996, 3068717, 223947, 176614, 366055, 596239, 170483, 167903, 912356, 270650, 425774, 1014313, 158345, 235037, 183141, 374995, 364135, 197229, 215933, 322922, 551317, 6137767, 2999994, 192560, 1398609, 346684, 836190, 249760}
+wjMaps = {7649783, 7649657, 7727749,6274175,7727780,324428,6119641,6119642,6119643,6119655,6120650,6133176,6146352,6274154,6641061,6641085,7465241,7485501,6799629,6755943,7627933,7628267,7628262,7628264,7628265,7627928,7627934,7627939,7600732,7601742,7601755,7627935,7601758,7608215,7608225,7608227,7628299,7627953,7627955,7627957,7574934,7630264,7630265,7630266,7630269,7638137,7654354,7727109,7727112,7727113,7727114,7727115,7727130,7727144,7727698,7727706,7727709,7732109,7732113,7732114}
+rcp2Maps = {4707191,3046622,1825683,5474771,1124089,1553365,2464770,958752,5246780,3684576,2978696,1398686,2840285,6415298,3664938,6097465,7473176,2499754,2971518,7553051,1448994,3775529,7090691,3769557,2580890,5654635,3515792,1716946,1354086,1607271,2864941,3758080,7586891,2928937,1479391,6117137,1432892,2530165,2501960,1725977,7638522,3643410,2796550,1476546,1077820,4984086,2358318,3875982,2232543,3029569,1703288,5667629,2179111,3848392,596206,2676504,2169032,1637869,7548567,1931371,2962689,4986791,1360399,7072684,5182823,1837351,1769303,3641438,346677,346677,346677,346677,928304,1654457,1987288,5532425,1280922,4706955,1354626,4591899,1273489,7199616,3699034,7604453,2092290,2250327,1611752,1665929,3686809,444948,1724476,3343865,1492000,4068702,4285551,1567583,3699501,5869140,2972854,3711328,1925618,2224069,3866569,3626395,2372055,2937392,2412906,3742961,2730450,4903690,3489293,2075791,2081737,3591676,3985587,2857172,6168975,6027895,1182462,1667979,2883221,920803,3742309,411975,1207484,1454226,2415010,3716679,6359335,3464602,6925000,1990566,2459054,4576716,2784397,2455667,5432981,2172624,4299202,763383,2154770,914035,1454226,1411495,3640933,2588439,2649598,3655567,463809,3422535,2951560,2981785,3675438,2462581,2667977,1539324,2763731,551113,1617254,3757248,3254479,1147674,5719188,3705060,1040912,370506,3684002,6620001,3880626,2072042,3647084,3828207,3537123,3618931,3592058,5194293,3211247,3669926,3731180,3175085,3988643,2703498,1603790,1604481,2240763,4961039,2686675,1952016,1322970,3837507,3651818,237116,410761,3069439,3774885,5840365,3731427,5725959,1693284,6380261,377836,7126782,3514399,1819063,1553514,5512348,5227442,5717626,2876539,5748062,2074751,2050140,2550766,2206884,3206914,1805487,4097284,3022119,3632876,3520474,2643649,7218822,4146225,3984929,1667881,418647,1664955,558545,5031716,2633481,1384334,2984889,3590715,313671,5289725,4252578,4603458,2267529,1609914,3824465,4846540,3084119,7605580,7605581,7605582,7605583,7605585,7605587,7605588,7605589,7605590,7605591,7605593,7605594,7605595,7605596,7605597,7605599,7605600,7605601,4701213,2928081,4008546,4807572,1878987,3545845,4428798,6024473,1013418,3779727,6483218,4739767,2572437,4611726,3639522,2952445,1815959,6217685,6817815,1631144,2716790,2479159,7584196,2892732,3329644,6766161,7544571,3569727,5436814,5152657,2865540,3747030,763507,502367,1569338,6847397,1664206,523063,1713599,1053435,4200758,1700392,615060,7566415,297935,4425570,4354774,6052422,1621816,896160,3514470,1460803,5387368,3103524,4870394,3593977,5896865,2747553,447416,1937367,1649390,3255515,3030719,1978537,974974,1160104,2519609,5438063,1698518,1948214,5509365,5638527,2479857,2085706,4705554,2118873,5086697,5269551,1677684,5788578,3896968,3387926,1980068,2835893,7593093,5813786,1931832,3595417,1647718,2629657,3841128,3799998,253185,1485715,3586929,1891070,6469397,2593776,4322359,2223087,3678963,5404111,928932,1374761,1264371,3679928,2046467,6225379,5171444,5167694,5157983,5423355,7571698,2568734,5265717,1132547,734801,1165108,6096329,3728829,5043345,3658285,3589964,3573613,3557368,7445961,2163742,3387826,1076550,5069883,1621292,3966524,1451655,7596558,7596559,7596560,7596562,7596691,7596695,7596696,2088004,7596699,4889205,916783,2282320,5206625,1724476,7467156,1746469,3979164,3864964,5882565,3976691,7598797,7598799,7598801,7598802,3455263,7598804,7598806,7598807,1414884,7598808,7598809,7598810,7598812,2976790,5612226,7598813,7598816,2905077,7598817,5521190,7598819,7505479,7598821,1567583,3029253,3014556,4350189,3727215,6852010,2971901,2857239,556968,1985203,2543526,776388,2586833,376396,1916839,1464805,2634571,2960638,6901124,1399931,2609575,7589970,7589970,7589971,7589972,7589973,7589974,7589976,7589978,7589979,4848465,3901079,6205585,7589982,7589984,7589985,7589986,7589987,7589988,1585804,3492425,3919924,2340745,3533379,2969546,5576533,2510021,1890436,1980004,5845176,7590090,5853829,2571202,3543036,2877339,1846397,7140150,5629504,3704320,2223149,3185643,6618462,1529469,2530165,1891368,5941925,3118877,1549214,1730735,802902,2663439,1663236,3430946,1382959,2326215,5571331,2002651,1553455,2479609,1352254,1742587,3659613,2431609,1536702,6203635,650830,2798632,5460163,4883143,2149868,5510498,7579758,3808106,2893867,2032283,2631904,1841509,2414847,3357194,6036604,2174969,2703901,3694470,3839094,5537746,728208,4160966,1931520,3835106,3046622,1825683,5474771,1124089,1553365,2464770,958752,5246780,3684576,2978696,1398686,2840285,6415298,3664938,6097465,7473176,2499754,2971518,7553051,1448994,3775529,7090691,3769557,2580890,5654635,3515792,1716946,1354086,1607271,2864941,3758080,7586891,7595767,7595768,7595770,7595771,7595772,7595773,7595774,1867649,1844404,2319756,1921105,235863,481141,3710878,3745348,1551411,599339,1132841,3186738,1445806,2950316,1999433,7588217,7588218,7588221,7588222,7588224,7588225,7588229,7588230,7588233,7588235}
+rcdefMaps = {6658620, 6719249, 6719272, 6719274, 6657402, 6658823, 6719298, 6719344, 6719537, 6722633, 6681951, 6722648, 6722658, 6722676, 6658874, 6661696, 6722687, 6658997, 6731960, 6659030, 6731981, 6732007, 6732051, 6661856, 6732071, 6659898, 6661882, 6732084, 6660018, 6732111, 6660055, 6732138, 6732159, 6660080, 6732179, 6660084, 6660127, 6661270, 6660213, 6663472, 6663638, 6732246, 6732270, 6732278, 6732297, 6733338, 6733510, 6665424, 6663761, 6733768, 6733804, 6733997, 6734056, 6663788, 6663826, 6663860, 6663889, 6663949, 6653314, 6663953, 6734072, 6663975, 6665184, 6665250, 6661918, 6734084, 6734091, 6661937, 6665266, 6735424, 6665354, 6735509, 6735569, 6735615, 6665386, 6661980, 6735678, 6735690, 6663295, 6735711, 6736916, 6663329, 6736965, 6666805, 6736978, 6666836, 6653340, 6682759, 6667031, 6680373, 6736998, 6737028, 6737079, 6680506, 6680645, 6680955, 6680966, 6680994, 6737156, 6737174, 6681010, 6682776, 6682790, 6682820, 6682847, 6745790, 6682871, 6682879, 6682907, 6684998, 6685010, 6685028, 6685097, 6685114, 6685140, 6685154, 6685270, 6685286, 6685328, 6685336, 6686059, 6686089, 6653369, 6682063, 6682435, 6682476, 6686172, 6686201, 6686215, 6686222, 6686226, 6683900, 6683893, 6745801, 6683875, 6683905, 6683925, 6683949, 6683956, 6745818, 6745827, 6745834, 6745837, 6683961, 6683997, 6684051, 6684062, 6684105, 6684131, 6686977, 6686241, 6686379, 6686999, 6687064, 6687119, 6687139, 6687226, 6687261, 6745845, 6687300, 6687355, 6687470, 6687484, 6687522, 6687525, 6688470, 6688494, 6691653, 6691674, 6691717, 6691804, 6691955, 6691984, 6692017, 6692059, 6692100, 6692129, 6692175, 6692210, 6692212, 6692220, 6692226, 6692229, 6692231, 6692234, 6692239, 6692242, 6692246, 6692256, 6679383, 6692262, 6692267, 6693632, 6693638, 6693683, 6693692, 6693697, 6694349, 6822182, 6694461, 6695678, 6695706, 6695744, 6695897, 6695909, 6695965, 6696949, 6697005, 6697074, 6697099, 6697320, 6697426, 6697481, 6697494, 6697502, 6697512, 6697520, 6697523, 6745872, 6745877, 6745880, 6746666, 6746673, 6746708, 6746725, 6746774, 6861181, 6748461, 6748474, 6748492, 6748500, 6748518, 6759364, 6780316, 6780334, 6780341, 6780356, 6780362, 6780523, 6780563, 6780570, 6780578, 6780599, 6783659, 6783851, 6783855, 6785540, 6785557, 6785573, 6795465, 6795508, 6797448, 6797474, 6797491, 6797498, 6797546, 6798867, 6798902, 6798910, 6798925, 6799213, 6799217, 6799220, 6800031, 6800069, 6805952, 6805961, 6805978, 6806008, 6806031, 6806063, 6806129, 6806157, 6806163, 6806178, 6807334, 6807792, 6807799, 6807802, 6807814, 6807849, 6807860, 6810867, 6810954, 6811072, 6811082, 6811975, 6812726, 6812734, 6812752, 6819491, 6819518, 6819547, 6819559, 6819588, 6820729, 6820752, 6820860, 6820902, 6820909, 6820923, 6820932, 6820938, 6820946, 6820950, 6820961, 6824413, 6824431, 6824536, 6825724, 6825733, 6825738, 6829379, 6829384, 6829394, 6829401, 6829469, 6829477, 6829483, 6829495, 6829496, 6829504, 6850037, 6850071, 6850895, 6850905, 6850919, 6850938, 6850947, 6850961, 6850984, 6851314, 6851326, 6851334, 6851337, 6854534, 6854551, 6854563, 6854587, 6855755, 6855784, 6873141, 6873170, 6873247, 6873401, 6874781, 6874803, 6874821, 6874864, 6874880, 6875607, 6875729, 6875764, 6875983, 6876003, 6876039, 6876048, 6876640, 6876668, 6876702, 6876712, 6878252, 6878274, 6878381, 6878406, 6878439, 6878444, 6878496, 6879344, 6879817, 6879827, 6879844, 6879851, 6879864, 6879885, 6881284, 6881297, 6881323, 6888920, 6889968, 6890515, 6893120, 6893208, 6893234, 6893435, 6893443, 6895395, 6896685, 6896733, 6896785, 6896845, 6896919, 6896948, 6896968, 6896985, 6897022, 6897081, 6898563, 6898579, 6898603, 6899085, 6899480, 6899488, 6899525, 6901207, 6904683, 6904722, 6907145, 6911203, 6911259, 6911319, 6917475, 6917557, 6931027, 6931158, 6931298, 6931463, 6931555, 6931589, 6932772, 6951786, 6951796, 6953219, 6957078, 6957216, 6959498, 6963828, 6964007, 6964238, 6964008, 6964009, 6972375, 6972453, 6973761, 6975925, 6976303, 6976366, 6976387, 6976670, 6976707, 6976770, 7006125, 7006199, 7013233, 7013245, 7013254, 7013277, 7013299, 7019232, 7019274, 7019317, 7019373, 7019377, 7130099, 7130148, 7269622, 7826915, 6741897, 7826928, 7826965, 7827009, 7827051, 7827241, 7827285, 7827334, 7827338, 7843873, 7843886, 7843893, 7845671, 7845696, 7846151}
+
+--bcMaps = {'#3','#13'} -- official rotation
+burlaMaps = {7675496, 7758193, 7678906, 7737478, 7660419, 7656608, 7708107, 7758185, 7735512, 7728488, 7727816, 7771218, 7686755, 7598929, 7677528, 7602085, 7602138, 7645917, 7662883, 7662883, 7664102, 7735507, 7873475, 7735912, 7677796, 7696114, 7876927, 7708136, 7677726, 7678879, 7737474, 7696708, 7656621, 7678689, 7656829, 7678883, 7737477, 7696054, 7664107, 7677688, 7737403, 7873277, 7873261, 7873336, 7708153, 7728649, 7708150, 7708122, 7728657, 7670636, 7629189, 7635563, 7615327, 7853770, 7638966, 7662912, 7798873, 7652017, 7652019, 7652033, 7652664, 7652667, 7652670, 7652679, 7652691, 7652790, 7652791, 7652792, 7652793, 7652796, 7652797, 7652798, 7652944, 7652958, 7652960, 7653108, 7653124, 7653127, 7653139, 7653142, 7653144, 7653149, 7426198, 7426611, 7387658, 7654229, 7203871, 7014223, 7175013, 7165042, 7154662, 6889690, 6933442, 7002430, 6884221, 6886514, 6882315, 6927305, 7659190, 7659197, 7659203, 7659205, 7659208, 7660110, 7660117, 7660104, 7660502, 7660704, 7660705, 7660706, 7660709, 7660710, 7660714, 7660716, 7660718, 7660721, 7660723, 7660727, 7661057, 7661060, 7661062, 7661067, 7661072, 7662547, 7662559, 7662562, 7662565, 7662566, 7662569, 7662759, 7662768, 7662777, 7662780, 7662796, 7663423, 7663428, 7663429, 7663430, 7663435, 7663437, 7663438, 7663444, 7663445, 7801474, 7801470, 7801467, 7801466, 7801465, 7801462, 7801461, 7801459, 7801452, 7801451, 7801449, 7801448, 7801447, 7801482, 7801478, 7801480, 7801476, 7801445, 7801444, 7801442, 7801441, 7801440, 7801439, 7801437, 7801436, 7801435, 7801435, 7801433, 7801430, 7801429, 7801427, 7801426, 7801425, 7801424, 7801423, 7801420, 7801419, 7801416, 7801399, 7801395, 7801394, 7801387, 7801847, 7801852, 7802248, 7802254, 7802255, 7802256, 7802257, 7802259, 7802260, 7802261, 7802262, 7802264, 7802265, 7802266, 7802267, 7802268, 7802269}
+t1C = "Team1" t2C = "Team2" t3C = "Team3" t4C = "Team4" mod = "Racing" antiLevevn = false antiLeverc = false np = false map = 0 fourteams = false teams = {Team1 = {}, Team2 = {}, Team3 = {}, Team4 = {}} p = {T1 = 0, T2 = 0, T3 = 0, T4 = 0} first = false gameStarted = false t1N = "Team 1" t2N = "Team 2" t3N = "Team 3" t4N = "Team 4" mix_v = true mix_bc = false mix_rc = false mix_wj = false mix_p1 = false mix_rcdef = false vote = {} ban = {}
+mapsAntivn = {7794534, 7762520, 7835814, 7835821, 7835822, 7835825, 7835826, 7838841, 7840128}
+mapsAntirc = {6641062, 6641147, 6641130, 6641108, 6641063, 6640755, 6641141, 6641097, 6641144, 6641111, 6641110, 6641087, 6641075, 6641132, 6641101, 6641090, 6641077, 6641069, 6641067, 6641064 , 6641058, 6640884, 6640869, 6640866, 6640860, 6640859, 6640858, 6640854, 6640852, 6640846, 6640833, 6640816, 6640808, 6640737, 6641109, 6641096}
+--[[MACRO--]]macroON = true macro_time = 2000 macro_warn = 18 macro_freeze = 24 macro_keys = {[38] = "Up", [87] = "W", [90] = "Z"} macro_info = {} mice_info = {} concatenation = {} os_time = os.time
+
+function main()
+	system.disableChatCommandDisplay(nil)
+	for _,k in pairs({"AfkDeath", "DebugCommand", "AutoNewGame", "AutoShaman","AutoScore","AutoTimeLeft","PhysicalConsumables"}) do tfm.exec["disable"..k]() end
+	-- Original Map: @7774050 @7876157 @7876775
+	if team then tfm.exec.newGame(backgroundTeams)
+	elseif elimination then tfm.exec.newGame(backgroundElims) end
+	tfm.exec.setGameTime(99999)
+	for name,player in pairs(tfm.get.room.playerList) do
+		system.bindMouse(name, true)
+	end
+	resetScore()
+	SetMapName()
+	checkColor()
+	ShowStartBoard(nil)
+	for _,admins in pairs(admin) do if diffAdminNameColor then tfm.exec.setNameColor(admins, "0x"..adminNameColor) end end
+	for name in pairs(tfm.get.room.playerList) do eventNewPlayer(name) end
+end
+
+function showPlayers(name, display)
+	if (display == nil) then display = true end
+	if (playersInGame > 0) then
+		local a = 1
+		local list = { "<p align='center'>" }
+		local n, i, id = 0, 1, 1
+		local text = ''
+	 
+		for k in next, participator do
+			if (k ~= name) then
+				local nick, tag = k:match('(.-)#(%d+)');tag = "<g><font size='9'>#" .. tag .. "</font></g>"
+				n = (n + 1)
+				if (n >= 10) then
+					i = (i + 1);list[i] = "<p align='center'>"
+					text = (kicking and "<a href='event:" .. k .. "'>" or '') .. nick .. tag .. '\n'
+					n = 1
+					id = (id + 1)
+				else
+					text = (kicking and "<a href='event:" .. k .. "'>" or '') .. nick .. tag .. '\n'
+				end
+				list[i] = list[i] .. text
+			end
+		end
+ 
+		local x = 6
+		for i = 250, #list do
+			addTextArea(i, list[i], name, x, 80, 180, 310, 0x324650, 0x000000, .8, true)
+			x = (x + (i == 1 and 193 or 203))
+		end
+		if (kicking) then
+			addTextArea(0, "<p align='center'><font size='16'><b>Escolha quem eliminar", name, 5, 25, 790, 25, 0x324650, 0, .8)
+		end
+		return #list
+	end
+end
+
+function eventMouse(name, x, y)
+	for i,v in pairs(tpPlayers) do
+		if name == v then
+			tfm.exec.movePlayer(name, x, y, 0, 1, false)
+		end
+	end
+end
+
+function toTeams()
+	teams.Team1 = {}
+	teams.Team2 = {}
+	teams.Team3 = {}
+	teams.Team4 = {}
+	local equipo = 1
+	local playersTotal = {}
+	for name, p in pairs(tfm.get.room.playerList) do table.insert(playersTotal, name) end
+	for i = 1, #playersTotal do
+		numJugador = math.random(#playersTotal)
+		addPlayer = playersTotal[numJugador]
+		table.remove(playersTotal, numJugador)
+		if fourteams then
+			if equipo == 1 then table.insert(teams.Team1, addPlayer) equipo = 2
+			elseif equipo == 2 then table.insert(teams.Team2, addPlayer) equipo = 3
+			elseif equipo == 3 then table.insert(teams.Team3, addPlayer) equipo = 4
+			elseif equipo == 4 then table.insert(teams.Team4, addPlayer) equipo = 1
+			end
+		else
+			if equipo == 1 then table.insert(teams.Team1, addPlayer) equipo = 2
+			elseif equipo == 2 then table.insert(teams.Team2, addPlayer) equipo = 1
+			end
+		end
+	end
+end
+
+function eventNewGame()
+	ui.removeTextArea(215)
+	ui.removeTextArea(216)
+	ui.removeTextArea(217)
+	ui.removeTextArea(218)
+	for i in pairs(meepPlayers) do
+		tfm.exec.giveMeep(meepPlayers[i])
+	end
+	for k in pairs(mice_info) do mice_info[k].adv = 0 end
+	if gameStarted then
+		if antiLevevn then antiLevevn = false
+		elseif antiLeverc then antiLeverc = false
+		elseif np then np = false
+		end
+		setTimeMode()
+		SetMapName()
+		for n,p in pairs(tfm.get.room.playerList) do if not PlayerInTeam(n) and team then tfm.exec.killPlayer(n) end end
+		for n,p in pairs(tfm.get.room.playerList) do if not PlayerInParticipator(n) and elimination then tfm.exec.killPlayer(n) end end
+		for _,k in pairs(ban) do table.clear(teams.Team1,k) table.clear(teams.Team2,k) table.clear(teams.Team3,k) table.clear(teams.Team4,k) end
+		SetPlayerNameColor()
+		first = false
+		if mod == "Vanilla" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod =="Racing" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod == "P7" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod =="Bootcamp" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod =="Burlas" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod == "Wj" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod =="Mix" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod == "P1" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod == "RcDef" then
+			tfm.exec.disableAfkDeath(false)
+		elseif mod =="end" then
+			tfm.exec.disableMinimalistMode(false)
+			tfm.exec.disableAfkDeath(true)
+		end
+	end
+end
+
+function eventNewPlayer(plr, y)
+	local info = {}
+	for key in next, macro_keys do
+		info[key] = {0, os_time() + macro_time, false, false}
+		system.bindKeyboard(plr, key, true, true)
+	end
+	macro_info[plr] = info
+	mice_info[plr] = {adv = 0, vote = 0}
+	if gameStarted then
+		if PlayerInTeam(plr) then tfm.exec.killPlayer(plr) return end
+		if autoJoin then
+			if fourteams then
+				if #teams.Team1 < #teams.Team2 and #teams.Team1 < #teams.Team3 and #teams.Team1 < #teams.Team4 or #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team3 and #teams.Team1 == #teams.Team4 or #teams.Team2 > #teams.Team1 and #teams.Team2 > #teams.Team3 and #teams.Team2 > #teams.Team4 and #teams.Team1 == #teams.Team3 and #teams.Team1 == #teams.Team4 and #teams.Team3 == #teams.Team4 or #teams.Team2 > #teams.Team1 and #teams.Team2 > #teams.Team3 and #teams.Team3 > #teams.Team1 and #teams.Team2 > #teams.Team4 and #teams.Team1 == #teams.Team4 then table.insert(teams.Team1,plr)
+				elseif #teams.Team2 < #teams.Team1 and #teams.Team2 < #teams.Team3 and #teams.Team2 < #teams.Team4 or #teams.Team3 > #teams.Team1 and #teams.Team3 > #teams.Team2 and #teams.Team4 > #teams.Team1 and #teams.Team4 > #teams.Team2 and #teams.Team1 == #teams.Team2 or #teams.Team1 > #teams.Team2 and #teams.Team1 > #teams.Team4 and #teams.Team3 > #teams.Team2 and #teams.Team3 > #teams.Team4 and #teams.Team2 == #teams.Team4 or #teams.Team1 > #teams.Team2 and #teams.Team1 > #teams.Team3 and #teams.Team1 > #teams.Team4 and #teams.Team2 == #teams.Team3 and #teams.Team2 == #teams.Team4 and #teams.Team3 == #teams.Team4 then table.insert(teams.Team2,plr)
+				elseif #teams.Team3 < #teams.Team1 and #teams.Team3 < #teams.Team2 and #teams.Team3 < #teams.Team4 or #teams.Team4 > #teams.Team1 and #teams.Team4 > #teams.Team2 and #teams.Team4 > #teams.Team3 and #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team3 and #teams.Team2 == #teams.Team3 or #teams.Team1 > #teams.Team2 and #teams.Team1 > #teams.Team3 and #teams.Team4 > #teams.Team2 and #teams.Team4 > #teams.Team3 and #teams.Team2 == #teams.Team3 or #teams.Team2 > #teams.Team1 and #teams.Team2 > #teams.Team3 and #teams.Team4 > #teams.Team1 and #teams.Team4 > #teams.Team3 and #teams.Team1 == #teams.Team3 then table.insert(teams.Team3,plr)
+				elseif #teams.Team4 < #teams.Team1 and #teams.Team4 < #teams.Team2 and #teams.Team4 < #teams.Team3 or #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team3 and #teams.Team1 == #teams.Team4 and #teams.Team2 == #teams.Team3 and #teams.Team2 == #teams.Team4 and #teams.Team3 == #teams.Team4 or #teams.Team3 > #teams.Team1 and #teams.Team3 > #teams.Team2 and #teams.Team3 > #teams.Team4 and #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team4 and #teams.Team2 == #teams.Team4 or #teams.Team1 > #teams.Team3 and #teams.Team1 > #teams.Team4 and #teams.Team2 > #teams.Team3 and #teams.Team2 > #teams.Team4 and #teams.Team3 == #teams.Team4 then table.insert(teams.Team4,plr)
+				else table.insert(teams.Team4,plr)
+				end
+			else
+				if #teams.Team1 == #teams.Team2 then
+					table.insert(teams.Team1,plr)
+				elseif #teams.Team1 > #teams.Team2 then
+					table.insert(teams.Team2,plr)
+				end
+			end
+		end
+	else tfm.exec.respawnPlayer(plr) ShowStartBoard(plr)
+	end
+	for _,k in pairs(ban) do ui.addTextArea(666, "<p align='center'><font size='100'><r>\nBAN</r></font>", k, 0, 0, 800, 400, 0x000001, 0x000001, 1, true) end
+	for _,admins in pairs(admin) do ui.addTextArea(99999, "<b><a href='event:ce'>Commands</b>", admins, 5, -25, 0, 10, 0x000001, 0x000000, 0.3, true) end
+end
+
+function table.slice(tbl, first, last, step)
+	local sliced = {}
+	for i = first or 1, last or #tbl, step or 1 do
+		sliced[#sliced+1] = tbl[i]
+	end
+	return sliced
+end
+
+function eventPlayerDied(plr)
+	if gameStarted then
+		if respawn then
+			tfm.exec.respawnPlayer(plr)
+		end
+		local plrCount = 0
+		for n,p in pairs(tfm.get.room.playerList) do
+			if not p.isDead then
+				plrCount = plrCount + 1
+			end
+		end
+		if plrCount <= 0 and not respawn then
+			newMap()
+		end
+	end
+end
+
+function eventPlayerWon(plr, TT, wonTime)
+	if gameStarted then
+		if PlayerInTeam(plr) then
+			if not first then
+				ui.addTextArea(61, "", nil, 5, 10, 790, 400, 0x000001, 0x000000, 0.3, true)
+				if table.contain(teams.Team1,plr) then
+					first = true
+					p.T1 = p.T1 + 1
+					tfm.exec.setPlayerScore(plr, 1,true)
+					SetMapName()
+					if not qg then
+						ui.addTextArea(62, "<font size='35'><p align='center'><i><font color='#"..t1C.."'> Team1 Scored!\nThanks to "..plr.."</font>", nil, 0, 140, 800, 100, 0x000000, 0x000000, 0, true)
+					end
+					if tonumber(p.T1) >= tonumber(win) then
+						tfm.exec.newGame(backgroundTeams)
+						for i,n in pairs(teams.Team2) do tfm.exec.killPlayer(n) end
+						for i,b in pairs(teams.Team3) do tfm.exec.killPlayer(b) end
+						for i,m in pairs(teams.Team4) do tfm.exec.killPlayer(m) end
+						ui.addTextArea(16, "<font size='35'><p align='center'><i><font color='#"..t1C.."'> "..t1N.."</font><font color='#ffffff'> won the game!", nil, 0, 140, 800, 60, 0x000000, 0x5eff6e, 0, true)
+						ui.addTextArea(17, "<font size='15'><p align='center'><i><font color='#"..t1C.."'> "..plr.."</font><font color='#ffffff'> made the last point!", nil, 0, 190, 800, 60, 0xffffff, 0x5eff6e, 0, true)
+						ui.removeTextArea(61)
+						ui.removeTextArea(62)
+						mod = "end"
+					end
+				end
+				if table.contain(teams.Team2,plr) then
+					first = true
+					p.T2 = p.T2 + 1
+					tfm.exec.setPlayerScore(plr, 1,true)
+					tfm.exec.setGameTime(1)
+					SetMapName()
+					ui.addTextArea(62, "<font size='35'><p align='center'><i><font color='#"..t2C.."'> Team2 Scored!\nThanks to "..plr.."</font>", nil, 0, 140, 800, 100, 0x000000, 0x000000, 0, true)
+					if tonumber(p.T2) >= tonumber(win) then
+						tfm.exec.newGame(backgroundTeams)
+						for i,v in pairs(teams.Team1) do tfm.exec.killPlayer(v) end
+						for i,b in pairs(teams.Team3) do tfm.exec.killPlayer(b) end
+						for i,m in pairs(teams.Team4) do tfm.exec.killPlayer(m) end
+						ui.addTextArea(16, "<font size='35'><p align='center'><i><font color='#"..t2C.."'> "..t2N.."</font><font color='#ffffff'> won the game!", nil, 0, 140, 800, 60, 0x000000, 0x5eff6e, 0, true)
+						ui.addTextArea(17, "<font size='15'><p align='center'><i><font color='#"..t2C.."'> "..plr.."</font><font color='#ffffff'> made the last point!", nil, 0, 190, 800, 60, 0xffffff, 0x5eff6e, 0, true)
+						ui.removeTextArea(61)
+						ui.removeTextArea(62)
+						mod = "end"
+					end
+				end
+				if table.contain(teams.Team3,plr) then
+					first = true
+					p.T3 = p.T3 + 1
+					tfm.exec.setPlayerScore(plr, 1,true)
+					tfm.exec.setGameTime(1)
+					SetMapName()
+					ui.addTextArea(62, "<font size='35'><p align='center'><i><font color='#"..t3C.."'> Team3 Scored!\nThanks to "..plr.."</font>", nil, 0, 140, 800, 100, 0x000000, 0x000000, 0, true)
+					if tonumber(p.T3) >= tonumber(win) then
+						tfm.exec.newGame(backgroundTeams)
+						for i,v in pairs(teams.Team1) do tfm.exec.killPlayer(v) end
+						for i,n in pairs(teams.Team2) do tfm.exec.killPlayer(n) end
+						for i,m in pairs(teams.Team4) do tfm.exec.killPlayer(m) end
+						ui.addTextArea(16, "<font size='35'><p align='center'><i><font color='#"..t3C.."'> "..t3N.."</font><font color='#ffffff'> won the game!", nil, 0, 140, 800, 60, 0x000000, 0x5eff6e, 0, true)
+						ui.addTextArea(17, "<font size='15'><p align='center'><i><font color='#"..t3C.."'> "..plr.."</font><font color='#ffffff'> made the last point!", nil, 0, 190, 800, 60, 0xffffff, 0x5eff6e, 0, true)
+						ui.removeTextArea(61)
+						ui.removeTextArea(62)
+						mod = "end"
+					end
+				end
+				if table.contain(teams.Team4,plr) then
+					first = true
+					p.T4 = p.T4 + 1
+					tfm.exec.setPlayerScore(plr, 1,true)
+					tfm.exec.setGameTime(1)
+					SetMapName()
+					ui.addTextArea(62, "<font size='35'><p align='center'><i><font color='#"..t4C.."'> Team4 Scored!\nThanks to "..plr.."</font>", nil, 0, 140, 800, 100, 0x000000, 0x000000, 0, true)
+					if tonumber(p.T4) >= tonumber(win) then
+						tfm.exec.newGame(backgroundTeams)
+						for i,v in pairs(teams.Team1) do tfm.exec.killPlayer(v) end
+						for i,n in pairs(teams.Team2) do tfm.exec.killPlayer(n) end
+						for i,b in pairs(teams.Team3) do tfm.exec.killPlayer(b) end
+						ui.addTextArea(16, "<font size='35'><p align='center'><i><font color='#"..t4C.."'> "..t4N.."</font><font color='#ffffff'> won the game!", nil, 0, 140, 800, 60, 0x000000, 0x5eff6e, 0, true)
+						ui.addTextArea(17, "<font size='15'><p align='center'><i><font color='#"..t4C.."'> "..plr.."</font><font color='#ffffff'> made the last point!", nil, 0, 190, 800, 60, 0xffffff, 0x5eff6e, 0, true)
+						ui.removeTextArea(61)
+						ui.removeTextArea(62)
+						mod = "end"
+					end
+				end
+				
+				if quickGame == true and tonumber(p.T1) < tonumber(win) and tonumber(p.T2) < tonumber(win) and tonumber(p.T3) < tonumber(win) and tonumber(p.T4) < tonumber(win) then
+					newMap()
+				elseif quickGame == false then
+					tfm.exec.setGameTime(1)
+				end
+			end
+		elseif PlayerInParticipator(plr) then
+			if not first then
+				tfm.exec.setGameTime(15)
+				kickingPlayers(plr)
+				latestWon = plr
+				first = true
+				tfm.exec.setPlayerScore(plr, 1,true)
+				if #participator <= 2 then
+					playerWonElimination(plr)
+				end
+			end
+		end
+	end
+end
+
+if_admin = function (name) for p = 1, #admin do if name == admin[p] then return true end end return false end
+
+function playerWonElimination(name)
+	tfm.exec.newGame(backgroundElims)
+	tfm.exec.setGameTime(99999)
+end
+
+function eventPlayerLeft(name)
+	if elimination then
+		if (participator[name]) then
+			participator[name] = nil
+		end
+		if not gameStarted then
+			ShowStartBoard(nil)
+		end
+	end
+end
+
+function eventTextAreaCallback(id, player, callback)
+	if id == 229 then
+		if callback == "participate" then
+			length = 0
+			isn = false
+			for plr in pairs(participator) do
+				length = length + 1
+				if participator[plr] ~= player then
+					isn = false
+				elseif participator[plr] == player then
+					isn = true
+					break
+				end
+			end
+			if not isn or length == 0 then
+				table.insert(participator, player)
+				ShowStartBoard(nil)
+				ui.updateTextArea(229, "Your participating", player)
+			end
+		end
+	end
+	if if_admin(player) then
+		if id == 8 then
+			if callback == "vn" then mod = "Vanilla" ShowStartBoard(nil) end
+		elseif id == 9 then
+			if callback == "rc" then mod = "Racing" ShowStartBoard(nil) end
+		elseif id == 32 then
+			if callback == "p7" then mod = "P7" ShowStartBoard(nil) end
+		elseif id == 18 then
+			if callback == "bc" then mod = "Bootcamp" ShowStartBoard(nil) end
+		elseif id == 20 then
+			if callback == "brc" then mod = "Burlas" ShowStartBoard(nil) end
+		elseif id == 21 then
+			if callback == "mix" then mod = "MIX" ShowStartBoard(nil) end
+		elseif id == 22 then
+			if callback == "wj" then mod = "WallJump" ShowStartBoard(nil) end
+		elseif id == 30 then
+			if callback == "p1" then mod = "P1" ShowStartBoard(nil) end
+		elseif id == 31 then
+			if callback == "rcdef" then mod = "RcDef" ShowStartBoard(nil) end
+		elseif id == 10 then
+			if callback == "start" then
+				if #teams.Team1 > 0 or #teams.Team2 > 0 or #teams.Team3 > 0 or #teams.Team4 > 0 then
+					math.randomseed(os.time())
+					for i=0, 33,1 do ui.removeTextArea(i) end
+						ui.removeTextArea(41)
+						ui.removeTextArea(42)
+						ui.removeTextArea(43)
+						ui.removeTextArea(39)
+						ui.removeTextArea(80)
+						gameStarted = true
+						p.T1 = 0
+						p.T2 = 0
+						p.T3 = 0
+						p.T4 = 0
+						resetScore()
+						ui.removeTextArea(1000)
+						ui.removeTextArea(40)
+						newMap()
+				elseif #participator > 0 then
+					math.randomseed(os.time())
+					totalParticipations = #participator
+					for i=0, 300,1 do ui.removeTextArea(i) end
+					ui.removeTextArea(41)
+					ui.removeTextArea(42)
+					ui.removeTextArea(43)
+					ui.removeTextArea(39)
+					gameStarted = true
+					resetScore()
+					ui.removeTextArea(1000)
+					newMap()
+				else print("<R>[ERROR]: You can't start the game, all the teams are empty!</R>") end
+			end
+		elseif id == 11 then
+			if callback == "dec" then
+				if tonumber(win) > 1 then
+					win = win - 1
+					ShowStartBoard(nil)
+				end
+			elseif callback == "inc" then
+				if tonumber(win) < 999 then
+					win = win + 1
+					ShowStartBoard(nil)
+				end
+			end
+		elseif id == 12 then
+			if callback == "OnAndOff" then
+				autoJoin = not autoJoin
+				ShowStartBoard(nil)
+			end
+		elseif id == 80 then
+			if callback == "rOnandOff" then
+				respawn = not respawn
+				ShowStartBoard(nil)
+			end
+		elseif id == 39 then
+			if callback == "elimination" then
+				ltd = false
+				team = false
+				elimination = true
+				newElimination(nil)
+				SetMapName()
+				tfm.exec.setGameTime(99999)
+			end
+		elseif id == 40 then
+			if callback == "ltd" then
+				team = false
+				elimination = false
+				ltd = true
+				newLTD(nil)
+				SetMapName()
+				tfm.exec.setGameTime(99999)
+			end
+		elseif id == 15 then
+			if callback == "Fill" then
+				if team then
+					toTeams()
+				elseif elimination then
+					for i, v in pairs(tfm.get.room.playerList) do
+						table.insert(participator, i)
+					end
+				end
+				ShowStartBoard(nil)
+			end
+		elseif id == 19 then
+			if callback == "nteams" then
+				fourteams = not fourteams
+				ShowStartBoard(nil)
+			end
+		elseif id == 1002 then
+			ui.removeTextArea(1001, player)
+			ui.removeTextArea(1002, player)
+		elseif id == 675 then for i=667,675 do ui.removeTextArea(i, player) end
+		elseif id == 99999 then ui.addTextArea(1001, "<p align='center'>Commands:</p>\n\n!team1/2/3/4 [name] [name] <R>or</R> !t1/2/3/4 [name] [name] - assign players to team.\n!add team1/2/3/4 [name] [name] <R>or</R> !a t1/2/3/4 [name] [name] - add players to team.\n!remove [name] [name] <R>or</R> !r [name] [name] - remove players from a team.\n!sp team1/2/3/4 [p] <R>or</R> !sp t1/2/3/4 [p] - change points from a team.\n!name t1/2/3/4 <R>or</R> !n t1/2/3/4 - set a name to team selected.\n!aj on <R>or</R> !aj off - status of autojoin.\n!skip <R>or</R> !s - change map.\n!antirc <R>or</R> !antivn - the next map will be antileve rc = racing or vn = vanilla.\n!repeat <R>or</R> !rt - repeat the current map.\n!np [map] - only put the number of map, no . Example: !np 0\n!macro on/off - active/deactivate AntiMacro\n!ban [name] [reason] - ban player selected (show black box to player).\n!unban [name] - unban player selected.\n!banlist - show a list of players banned.\n!admin [name] - add player to admins list.\n!noadmin [name] - remove admin.\n!vote on/result/end - start vote, show result and end.\n!finish script\n\n", player, 125, 50, 550, 300, 0x000001, 0x000000, 0.8, true)
+			ui.addTextArea(1002, "<p align='center'><a href='event:cerrar'>CLOSE</p>", player, 350, 345, 95, 18, 0x324650, 0x212F36, 1, true)
+		end
+	end
+	if id == 35 then
+			if callback == "mrc" and mice_info[player].vote == 0 then
+				vote.racing = vote.racing + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mp7" and mice_info[player].vote == 0 then
+				vote.p7 = vote.p7 + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mbr" and mice_info[player].vote == 0 then
+				vote.burlas = vote.burlas + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mwj" and mice_info[player].vote == 0 then
+				vote.wj = vote.wj + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mbc" and mice_info[player].vote == 0 then
+				vote.bootcamp = vote.bootcamp + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mvn" and mice_info[player].vote == 0 then
+				vote.vanilla = vote.vanilla + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mmix" and mice_info[player].vote == 0 then
+				vote.mix = vote.mix + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mp1" and mice_info[player].vote == 0 then
+				vote.p1 = vote.p1 + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			elseif callback == "mrcdef" and mice_info[player].vote == 0 then
+				vote.rcdef = vote.rcdef + 1
+				ui.removeTextArea(35, player) mice_info[player].vote = 1
+			end
+	elseif id == 88888 then
+		if callback == "panel" then
+			local pnp = false
+			for i,v in pairs(panelPlayers) do
+				if v == player then
+					pnp = true
+					break
+				end
+			end
+			if not pnp then
+				table.insert(panelPlayers, player)
+				ShowStartBoard(nil)
+			elseif pnp then
+				panelPlayers = removeItem(panelPlayers, player)
+				removePanel()
+				ShowStartBoard(nil)
+			end
+		end
+	elseif id == 37 then
+		if callback == "skip" and mice_info[player].vote == 0 then
+			vote.skip = vote.skip + 1
+			ui.removeTextArea(37, player) mice_info[player].vote = 1
+		elseif callback == "rt" and mice_info[player].vote == 0 then
+			vote.rt = vote.rt + 1
+			ui.removeTextArea(37, player) mice_info[player].vote = 1
+		end
+	elseif id == 239 then
+		if callback == "teams" then
+			elimination = false
+			ltd = false
+			team = true
+			participator = {}
+			for i=0, 300, 1 do ui.removeTextArea(i) end
+			tfm.exec.newGame(backgroundTeams)
+			SetMapName()
+			tfm.exec.setGameTime(99999)
+			ShowStartBoard(nil)
+		end
+	elseif id == 215 or id == 216 or id == 217 or id == 218 then
+		if player == latestWon then
+			for i, v in pairs(participator) do
+				if callback == participator[i] then
+					ui.removeTextArea(215)
+					ui.removeTextArea(216)
+					ui.removeTextArea(217)
+					ui.removeTextArea(218)
+					participator = removeItem(participator, v)
+					SetMapName()
+					tfm.exec.setGameTime(5)
+				end
+			end
+		end
+	end
+end
+
+function ShowPanel(name)
+	if not fourteams then
+		ui.addTextArea(1011, "<p align='center'><font size='14' color='#" ..t1C .."'>"..(table.concat(teams.Team1,"\n", 1, math.min(10, #teams.Team1)) or ""), name, 210, 66, 151, 204, 0x000001, t1I, 0.6, true)
+		ui.addTextArea(1012, "<p align='center'><font size='14' color='#" ..t2C .."'>"..(table.concat(teams.Team2,"\n", 1, math.min(10, #teams.Team2)) or ""), name, 439, 66, 151, 204, 0x000001, t2I, 0.6, true)
+	elseif fourteams then
+		ui.addTextArea(1011, "<p align='center'><font size='14' color='#" ..t1C .."'>"..(table.concat(teams.Team1,"\n", 1, math.min(5, #teams.Team1)) or ""), name, 210, 66, 151, 102, 0x000001, t1I, 0.6, true)
+		ui.addTextArea(1012, "<p align='center'><font size='14' color='#" ..t2C .."'>"..(table.concat(teams.Team2,"\n", 1, math.min(5, #teams.Team2)) or ""), name, 439, 66, 151, 102, 0x000001, t2I, 0.6, true)
+		ui.addTextArea(1013, "<p align='center'><font size='14' color='#" ..t3C .."'>"..(table.concat(teams.Team3,"\n", 1, math.min(5, #teams.Team3)) or ""), name, 210, 188, 151, 102, 0x000001, t3I, 0.6, true)
+		ui.addTextArea(1014, "<p align='center'><font size='14' color='#" ..t4C .."'>"..(table.concat(teams.Team4,"\n", 1, math.min(5, #teams.Team4)) or ""), name, 439, 188, 151, 102, 0x000001, t4I, 0.6, true)
+	end
+	ui.addTextArea(1015, "<p align='center'><b>Mode: "..mod, name, 240, 290, 0, 0, 0x000001, 0x000000, 0.2, true)
+end
+
+function removePanel()
+	for i=1010, 1030, 1 do
+		ui.removeTextArea(i)
+	end
+end
+
+function eventChatCommand(name, command)
+	if if_admin(name) then
+		local arg={}
+		for argument in command:gmatch("[^%s]+") do
+			table.insert(arg,argument)
+		end
+		if arg[1] == "team1" and arg[2] ~= nil or arg[1] == "t1" and arg[2] ~= nil then
+			teams.Team1 = {}
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team2" or TeamFix(v) == "team3" or TeamFix(v) == "team4" then
+							table.clear(teams.Team2,v) table.clear(teams.Team3,v) table.clear(teams.Team4,v) table.insert(teams.Team1,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team1,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+		elseif arg[1] == "team2" and arg[2] ~= nil or arg[1] == "t2" and arg[2] ~= nil then
+			teams.Team2 = {}
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team1" or TeamFix(v) == "team3" or TeamFix(v) == "team4" then
+							table.clear(teams.Team1,v) table.clear(teams.Team3,v) table.clear(teams.Team4,v) table.insert(teams.Team2,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team2,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+		elseif arg[1] == "team3" and arg[2] ~= nil and fourteams or arg[1] == "t3" and arg[2] ~= nil and fourteams then
+			teams.Team3 = {}
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team1" or TeamFix(v) == "team2" or TeamFix(v) == "team4" then
+							table.clear(teams.Team1,v) table.clear(teams.Team2,v) table.clear(teams.Team4,v) table.insert(teams.Team3,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team3,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+		elseif arg[1] == "team4" and arg[2] ~= nil and fourteams or arg[1] == "t4" and arg[2] ~= nil and fourteams then
+			teams.Team4 = {}
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team1" or TeamFix(v) == "team2" or TeamFix(v) == "team3" then
+							table.clear(teams.Team1,v) table.clear(teams.Team2,v) table.clear(teams.Team3,v) table.insert(teams.Team4,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team4,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+		elseif arg[1] == "tp" then
+			if arg[2] == "on" then
+				table.insert(tpPlayers, name)
+			elseif arg[2] == "off" then
+				tpPlayers = removeItem(tpPlayers, name)
+			elseif arg[2] ~= nil then
+				if arg[3] == nil or arg[3] == "on" then
+					table.insert(tpPlayers, arg[2])
+				elseif arg[3] == "off" then
+					tpPlayers = removeItem(tpPlayers, arg[2])
+				end
+			end
+		elseif arg[1] == "r" then
+			if arg[2] == nil then
+				tfm.exec.respawnPlayer(name)
+			elseif arg[2] ~= nil then
+				tfm.exec.respawnPlayer(arg[2])
+			end
+		elseif arg[1] == "rk" then
+			if arg[2] == nil then
+				tfm.exec.killPlayer(name)
+				tfm.exec.respawnPlayer(name)
+			elseif arg[2] ~= nil then
+				tfm.exec.killPlayer(arg[2])
+				tfm.exec.respawnPlayer(arg[2])
+			end
+		elseif arg[1] == "kill" and arg[2] ~= nil then
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						tfm.exec.killPlayer(v)
+					end
+				end
+			end
+		elseif arg[1] == "add" and arg[2] == "team1" and arg[3] ~= nil or arg[1] == "a" and arg[2] == "t1" and arg[3] ~= nil then
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team2" or TeamFix(v) == "team3" or TeamFix(v) == "team4" then
+							table.clear(teams.Team2,v) table.clear(teams.Team3,v) table.clear(teams.Team4,v) table.insert(teams.Team1,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team1,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+		elseif arg[1] == "add" and arg[2] == "team2" and arg[3] ~= nil or arg[1] == "a" and arg[2] == "t2" and arg[3] ~= nil then
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team1" or TeamFix(v) == "team3" or TeamFix(v) == "team4" then
+							table.clear(teams.Team1,v) table.clear(teams.Team3,v) table.clear(teams.Team4,v) table.insert(teams.Team2,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team2,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+		elseif arg[1] == "add" and arg[2] == "team3" and arg[3] ~= nil and fourteams or arg[1] == "a" and arg[2] == "t3" and arg[3] ~= nil and fourteams then
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team1" or TeamFix(v) == "team2" or TeamFix(v) == "team4" then
+							table.clear(teams.Team1,v) table.clear(teams.Team2,v) table.clear(teams.Team4,v) table.insert(teams.Team3,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team3,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+		elseif arg[1] == "add" and arg[2] == "team4" and arg[3] ~= nil and fourteams or arg[1] == "a" and arg[2] == "t4" and arg[3] ~= nil and fourteams then
+			for i,v in pairs(arg) do
+				if i > 1 then
+					if PlayerCheck(v) then
+						if TeamFix(v) == "team1" or TeamFix(v) == "team2" or TeamFix(v) == "team3" then
+							table.clear(teams.Team1,v) table.clear(teams.Team2,v) table.clear(teams.Team3,v) table.insert(teams.Team4,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						else
+							table.insert(teams.Team4,v)
+							if not gameStarted then ShowStartBoard(nil) end
+						end
+					end
+				end
+			end
+			elseif arg[1] == "remove" and arg[2] ~= nil or arg[1] == "r" and arg[2] ~= nil then
+			if TeamFix(arg[2]) == "team1" or TeamFix(arg[2]) == "team2" or TeamFix(arg[2]) == "team3" or TeamFix(arg[2]) == "team4"then
+				if not gameStarted then table.clear(teams.Team1,arg[2]) table.clear(teams.Team2,arg[2]) table.clear(teams.Team3,arg[2]) table.clear(teams.Team4,arg[2])
+					ShowStartBoard(nil)
+				else
+					table.clear(teams.Team1,arg[2]) table.clear(teams.Team2,arg[2]) table.clear(teams.Team3,arg[2]) table.clear(teams.Team4,arg[2])
+				end
+			end
+		elseif arg[1] == "aj" and arg[2] == "on" and arg[3] == nil then
+			autoJoin = true
+		elseif arg[1] == "aj" and arg[2] == "off" and arg[3] == nil then
+			autoJoin = false
+		elseif arg[1] == "finish" and arg[2] == "script" then
+				system.exit()
+		elseif arg[1] == "reset" and arg[2] == nil then
+			if gameStarted then
+				gameStarted = false
+				ui.removeTextArea(16)
+				ui.removeTextArea(17)
+				ui.removeTextArea(61)
+				ui.removeTextArea(62)
+				tfm.exec.newGame(backgroundTeams)
+				if team then
+					ShowStartBoard(nil)
+				elseif elimination then
+					elimination = false
+					ShowStartBoard(nil)
+					elimination = true
+					ShowStartBoard(nil)
+				end
+				SetMapName()
+			end
+		elseif arg[1] == "d" and tonumber(arg[2]) ~= nil then
+			if tonumber(arg[2]) > 0 and tonumber(arg[2]) <= 999 then
+				win = arg[2]
+			if gameStarted == false then ShowStartBoard(nil) else SetMapName() end
+			end
+		elseif arg[1] == "name" or arg[1] == "n" then
+			local t = command:find('%s')
+			local nteam = command:sub(t+3)
+			if arg[2] == "t1" and arg[3] ~= nil then t1N = ""..nteam..""
+			elseif arg[2] == "t2" and arg[3] ~= nil then t2N = ""..nteam..""
+			elseif arg[2] == "t3" and arg[3] ~= nil then t3N = ""..nteam..""
+			elseif arg[2] == "t4" and arg[3] ~= nil then t4N = ""..nteam..""
+			end
+			if gameStarted == false then ShowStartBoard(nil) else SetMapName() end
+		elseif arg[1] == "skip" or arg[1] == "s" then
+			ui.removeTextArea(61)
+			ui.removeTextArea(62)
+			newMap()
+		elseif arg[1] == "repeat" or arg[1] == "rt" then
+			ui.removeTextArea(61)
+			ui.removeTextArea(62)
+			tfm.exec.newGame(tfm.get.room.currentMap)
+		elseif arg[1] == "antivn" then
+			print("<R>• Next map: antileve vanilla.</R>")
+			antiLevevn = true
+		elseif arg[1] == "antirc" then
+			print("<R>• Next map: antileve racing.</R>")
+			antiLeverc = true
+		elseif arg[1] == "np" and arg[2] ~= nil then
+			if tonumber(arg[2]) then
+				np = true
+				map = arg[2]
+			end
+		elseif arg[1] == "mode" and arg[2] ~= nil then
+			if arg[2] == "rc" or arg[2] == "racing" then
+				mod = "Racing"
+			elseif arg[2] == "p7" or arg[2] == "oldrc" then
+				mod = "P7"
+			elseif arg[2] == "br" or arg[2] == "burlas" then
+				mod = "Burlas"
+			elseif arg[2] == "wj" or arg[2] == "walljump" then
+				mod = "WallJump"
+			elseif arg[2] == "vn" or arg[2] == "vanilla" then
+				mod = "vanilla"
+			elseif arg[2] == "bc" or arg[2] == "bootcamp" then
+				mod = "Bootcamp"
+			elseif arg[2] == "rcdef" or arg[2] == "racingdef" then
+				mod = "RcDef"
+			elseif arg[2] == "p1" or arg[2] == "rcp1" then
+				mod = "P1"
+			elseif arg[2] == "mix" then
+				mod = "MIX"
+			end
+		elseif arg[1] == "qg" then
+			if arg[2] == "on" then
+				quickGame = true
+			elseif arg[2] == "off" then
+				quickGame = false
+			end
+		elseif arg[1] == "sp" then
+			if arg[2] == "team1" or arg[2] == "t1" then
+				if tonumber(arg[3]) ~= nil then
+					if tonumber(arg[3]) < tonumber(win) and tonumber(arg[3]) > 0 then
+						p.T1 = tonumber(arg[3])
+						SetMapName()
+					end
+				end
+			elseif arg[2] == "team2" or arg[2] == "t2" then
+				if tonumber(arg[3]) ~= nil then
+					if tonumber(arg[3]) < tonumber(win) and tonumber(arg[3]) > 0 then
+						p.T2 = tonumber(arg[3])
+						SetMapName()
+					end
+				end
+			end
+		elseif arg[1] == "meep" and arg[2] ~= nil then
+			if arg[2] ~= "all" then
+				for i,v in pairs(arg) do
+					if i > 1 then
+						if PlayerCheck(v) then
+							if arg[3] == "on" or arg[3] == nil then
+								tfm.exec.giveMeep(v)
+								table.insert(meepPlayers, v)
+							elseif arg[3] == "off" then
+								meepPlayers = removeItem(meepPlayers, v)
+							end
+						end
+					end
+				end
+			elseif arg[2] == "all" then
+				for n,p in pairs(tfm.get.room.playerList) do
+					if arg[3] == "on" or arg[3] == nil then
+						table.insert(meepPlayers, n)
+						tfm.exec.giveMeep(n)
+					elseif arg[3] == "off" then
+						meepPlayers = removeItem(meepPlayers, n)
+					end
+				end
+			end
+		elseif arg[1] == "adminnamecolor" then
+			if arg[2] == "off" then
+				diffAdminNameColor = false
+			elseif arg[2] == "on" then
+				diffAdminNameColor = true
+			end
+		elseif arg[1] == "vote" then
+			if arg[2] == "mode" then
+				if arg[3] == "on" then
+					for k in pairs(mice_info) do mice_info[k].vote = 0 end
+					ui.removeTextArea(38)
+					ui.removeTextArea(35)
+					ui.removeTextArea(36)
+					ui.removeTextArea(37)
+					ShowVot()
+				elseif arg[3] == "result" then
+					ui.removeTextArea(38)
+					ui.removeTextArea(35)
+					ui.removeTextArea(36)
+					ui.removeTextArea(37)
+					ui.addTextArea(36, "<p align='center'><font size='20'>Vote</font></p>\nNext mode\n\n<font size='15'>Racing: "..vote.racing.."\nP7: "..vote.p7.."\nBurlas: "..vote.burlas.."\nWallJump: "..vote.wj.."\nBootcamp: "..vote.bootcamp.."\nVanilla: "..vote.vanilla.."\nP1: "..vote.p1.."\nRcDef: "..vote.rcdef.."\nMix: "..vote.mix.."</font>", nil, 300, 100, 200, 220, 0x000001, 0x000001, 0.8, true)
+				elseif arg[3] == "end" then
+					ui.removeTextArea(38)
+					ui.removeTextArea(35)
+					ui.removeTextArea(36)
+					ui.removeTextArea(37)
+				end
+			elseif arg[2] == "skiprt" then
+				if arg[3] == "on" then
+					for k in pairs(mice_info) do mice_info[k].vote = 0 end
+					ui.removeTextArea(38)
+					ui.removeTextArea(35)
+					ui.removeTextArea(36)
+					ui.removeTextArea(37)
+					ShowVotSkipRt()
+				elseif arg[3] == "result" then
+					ui.removeTextArea(38)
+					ui.removeTextArea(35)
+					ui.removeTextArea(36)
+					ui.removeTextArea(37)
+					ui.addTextArea(38, "<p align='center'><font size='20'>Vote</font></p><font size='15'>Skip: "..vote.skip.."\nRepeat: "..vote.rt.."</font>", nil, 300, 25, 200, 80, 0x000001, 0x000001, 0.3, true)
+				elseif arg[3] == "end" then
+					ui.removeTextArea(38)
+					ui.removeTextArea(35)
+					ui.removeTextArea(36)
+					ui.removeTextArea(37)
+				end
+			end
+		elseif arg[1] == "admin" and arg[2] ~= nil then table.insert(admin,arg[2]) print(" • "..arg[2].." is now admin thanks to "..name) ui.addTextArea(99999, "<a href='event:ce'>Commands", arg[2], 5, -25, 0, 10, 0x1e3d42, 0x1e3d42)
+		elseif arg[1] == "noadmin" and arg[2] ~= nil then if arg[2]==roomloader then print("<R>"..name.." tried remove you from admins.") else table.clear(admin,arg[2]) print(" • "..name.." remove admin to "..arg[2]) ui.removeTextArea(99999, arg[2]) end
+		elseif arg[1] == "ban" and arg[2] ~= nil then
+			if table.contain(ban,arg[2]) then print("<R>• The player "..arg[2].." is already banned.</R>")
+			elseif table.contain(admin,arg[2]) then print("<R>• You can't ban an admin.</R>", name) else
+				local t = command:find('%s')
+				local reason = command:sub(t+1)
+				tfm.exec.killPlayer(arg[2])
+				table.insert(ban,arg[2])
+				table.clear(teams.Team1,arg[2]) table.clear(teams.Team2,arg[2]) table.clear(teams.Team3,arg[2]) table.clear(teams.Team4,arg[2])
+				ui.addTextArea(666, "<p align='center'><font size='100'><r>\nBAN</r></font>\n<font color='#ffffff'><font size='30'>"..reason, arg[2], 0, 0, 800, 400, 0x000001, 0x000001, 1, true)
+				print(" • "..name.." has banned -"..reason)
+			end
+		elseif arg[1] == "unban" and arg[2] ~= nil then ui.removeTextArea(666,arg[2])
+			table.clear(ban,arg[2])
+			print(" • "..name.." has unban "..arg[2])
+			if gameStarted and autoJoin then
+				if fourteams then
+					if #teams.Team1 < #teams.Team2 and #teams.Team1 < #teams.Team3 and #teams.Team1 < #teams.Team4 or #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team3 and #teams.Team1 == #teams.Team4 or #teams.Team2 > #teams.Team1 and #teams.Team2 > #teams.Team3 and #teams.Team2 > #teams.Team4 and #teams.Team1 == #teams.Team3 and #teams.Team1 == #teams.Team4 and #teams.Team3 == #teams.Team4 or #teams.Team2 > #teams.Team1 and #teams.Team2 > #teams.Team3 and #teams.Team3 > #teams.Team1 and #teams.Team2 > #teams.Team4 and #teams.Team1 == #teams.Team4 then table.insert(teams.Team1,arg[2])
+					elseif #teams.Team2 < #teams.Team1 and #teams.Team2 < #teams.Team3 and #teams.Team2 < #teams.Team4 or #teams.Team3 > #teams.Team1 and #teams.Team3 > #teams.Team2 and #teams.Team4 > #teams.Team1 and #teams.Team4 > #teams.Team2 and #teams.Team1 == #teams.Team2 or #teams.Team1 > #teams.Team2 and #teams.Team1 > #teams.Team4 and #teams.Team3 > #teams.Team2 and #teams.Team3 > #teams.Team4 and #teams.Team2 == #teams.Team4 or #teams.Team1 > #teams.Team2 and #teams.Team1 > #teams.Team3 and #teams.Team1 > #teams.Team4 and #teams.Team2 == #teams.Team3 and #teams.Team2 == #teams.Team4 and #teams.Team3 == #teams.Team4 then table.insert(teams.Team2,arg[2])
+					elseif #teams.Team3 < #teams.Team1 and #teams.Team3 < #teams.Team2 and #teams.Team3 < #teams.Team4 or #teams.Team4 > #teams.Team1 and #teams.Team4 > #teams.Team2 and #teams.Team4 > #teams.Team3 and #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team3 and #teams.Team2 == #teams.Team3 or #teams.Team1 > #teams.Team2 and #teams.Team1 > #teams.Team3 and #teams.Team4 > #teams.Team2 and #teams.Team4 > #teams.Team3 and #teams.Team2 == #teams.Team3 or #teams.Team2 > #teams.Team1 and #teams.Team2 > #teams.Team3 and #teams.Team4 > #teams.Team1 and #teams.Team4 > #teams.Team3 and #teams.Team1 == #teams.Team3 then table.insert(teams.Team3,arg[2])
+					elseif #teams.Team4 < #teams.Team1 and #teams.Team4 < #teams.Team2 and #teams.Team4 < #teams.Team3 or #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team3 and #teams.Team1 == #teams.Team4 and #teams.Team2 == #teams.Team3 and #teams.Team2 == #teams.Team4 and #teams.Team3 == #teams.Team4 or #teams.Team3 > #teams.Team1 and #teams.Team3 > #teams.Team2 and #teams.Team3 > #teams.Team4 and #teams.Team1 == #teams.Team2 and #teams.Team1 == #teams.Team4 and #teams.Team2 == #teams.Team4 or #teams.Team1 > #teams.Team3 and #teams.Team1 > #teams.Team4 and #teams.Team2 > #teams.Team3 and #teams.Team2 > #teams.Team4 and #teams.Team3 == #teams.Team4 then table.insert(teams.Team4,arg[2])
+					else table.insert(teams.Team4,arg[2])
+					end
+				else
+					if #teams.Team1 <= #teams.Team2 then table.insert(teams.Team1,arg[2])
+					elseif #teams.Team1 > #teams.Team2 then table.insert(teams.Team2,arg[2])
+					end
+				end
+			end
+		elseif arg[1] == "banlist" then
+			ui.addTextArea(667, "<p align='center'><font size='16'>Banned players", name, 100, 35, 600, 350, 0x1e3d42, 0x8d5b3e, 1, true) ui.addTextArea(668, (table.concat(ban,"\n", 1, math.min(24, #ban)) or ""), name, 100, 65, 190, 320, 0x000000, 0x000000, 0, true) ui.addTextArea(669, (table.concat(ban,"\n", 25, math.min(48, #ban)) or ""), name, 300, 65, 190, 320, 0x000000, 0x000000, 0, true) ui.addTextArea(670, (table.concat(ban,"\n", 49, math.min(72, #ban)) or ""), name, 500, 65, 190, 320, 0x000000, 0x000000, 0, true)
+			ui.addTextArea(675, "<R><font size='24'><a href='event:cerrar'>X</a></font></R>", name, 708, 35, 20, 30, 0x1e3d42, 0x8d5b3e, 1, true)
+		elseif arg[1] == "help" or arg[1] == "commands" or arg[1] == "cmds" or arg[1] == "cmd" then
+			ui.addTextArea(1001, "<p align='center'>Commands:</p>\n\n!team1/2/3/4 [name] [name] <R>or</R> !t1/2/3/4 [name] [name] - assign players to team.\n!add team1/2/3/4 [name] [name] <R>or</R> !a t1/2/3/4 [name] [name] - add players to team.\n!remove [name] [name] <R>or</R> !r [name] [name] - remove players from a team.\n!sp team1/2/3/4 [p] <R>or</R> !sp t1/2/3/4 [p] - change points from a team.\n!name t1/2/3/4 <R>or</R> !n t1/2/3/4 - set a name to team selected.\n!aj on <R>or</R> !aj off - status of autojoin.\n!skip <R>or</R> !s - change map.\n!antirc <R>or</R> !antivn - the next map will be antileve rc = racing or vn = vanilla.\n!repeat <R>or</R> !rt - repeat the current map.\n!np [map] - only put the number of map, no . Example: !np 0\n!macro on/off - active/deactivate AntiMacro\n!ban [name] [reason] - ban player selected (show black box to player).\n!unban [name] - unban player selected.\n!banlist - show a list of players banned.\n!admin [name] - add player to admins list.\n!noadmin [name] - remove admin.\n!vote on/result/end - start vote, show result and end.\n!finish script\n\n", name, 125, 50, 550, 300, 0x324650, 0x212F36, 1, true)
+			ui.addTextArea(1002, "<p align='center'><a href='event:cerrar'>CLOSE</p>", name, 350, 345, 95, 18, 0x324650, 0x212F36, 1, true)
+		elseif arg[1] == "macro" then if arg[2] == "on" then macroON = true print("<R>[AntiMacro] activated.</R>") elseif arg[2] == "off" then macroON = false print("<R>[AntiMacro] deactivated.</R>") end
+		end
+	end
+end
+
+eventKeyboard = function(player, key)
+if macroON then
+	if not macro_keys[key] then return end -- By tocutoeltocu
+	local info = macro_info[player][key]
+	local now = os_time()
+	info[1] = info[1] + 1
+	if now >= info[2] then
+		if info[4] and mice_info[player].adv==0 then
+			local count = 3
+			concatenation[1] = "<r>[AntiMacro] <bv>"
+			concatenation[2] = player
+			concatenation[3] = "<bl> frozen."
+			local data
+			for _key, name in next, macro_keys do
+				data = macro_info[player][_key]
+				count = count + 4
+				concatenation[count - 3] = " "
+				concatenation[count - 2] = name
+				concatenation[count - 1] = ": "
+				if now >= data[2] and info ~= data then
+					concatenation[count] = "0"
+				else
+					concatenation[count] = data[1]
+				end
+			end
+			local msg = table.concat(concatenation, "", 1, count)
+			print(msg)
+			tfm.exec.freezePlayer(player)
+			mice_info[player].adv = 1
+		end
+		info[1] = 1
+		info[2] = now + macro_time
+		info[3] = false
+		info[4] = false
+		return
+	elseif not info[3] and info[1] >= macro_warn and mice_info[player].adv==0 then
+		info[3] = true
+		local count = 3
+		concatenation[1] = "<j>[AntiMacro] <bv>"
+		concatenation[2] = player
+		concatenation[3] = "<bl> may be using macros."
+		local data
+		for _key, name in next, macro_keys do
+			data = macro_info[player][_key]
+			count = count + 4
+			concatenation[count - 3] = " "
+			concatenation[count - 2] = name
+			concatenation[count - 1] = ": "
+			if now >= data[2] then
+				concatenation[count] = "0"
+			else
+				concatenation[count] = data[1]
+			end
+		end
+		local msg = table.concat(concatenation, "", 1, count)
+		print(msg)
+	elseif not info[4] and info[1] >= macro_freeze then
+		info[4] = true
+	end
+end
+end
+
+function eventLoop(elapsedTime, remainingTime)
+	if remainingTime <= 500 and gameStarted then
+		newMap()
+	end
+end
+
+function newMap()
+local vanilla = vnMaps[math.random(#vnMaps)]
+local bootcamp = bcMaps[math.random(#bcMaps)]
+local antivn = mapsAntivn[math.random(#mapsAntivn)]
+local antirc = mapsAntirc[math.random(#mapsAntirc)]
+local burlas = burlaMaps[math.random(#burlaMaps)]
+local wj = wjMaps[math.random(#wjMaps)]
+local p1 = rcp2Maps[math.random(#rcp2Maps)]
+local rcdef = rcdefMaps[math.random(#rcdefMaps)]
+ui.removeTextArea(61)
+ui.removeTextArea(62)
+
+for i in pairs(meepPlayers) do
+	tfm.exec.giveMeep(meepPlayers[i])
+end
+
+	if antiLevevn then
+		tfm.exec.newGame(antivn)
+	elseif antiLeverc then
+		tfm.exec.newGame(antirc)
+	elseif np then
+		tfm.exec.newGame(map)
+	elseif mod == "Vanilla" then
+		tfm.exec.newGame(vanilla)
+	elseif mod == "Racing" then
+		tfm.exec.newGame'#17'
+	elseif mod == "P7" then
+		tfm.exec.newGame'#7'
+	elseif mod == "Bootcamp" then
+		tfm.exec.newGame(bootcamp)
+	elseif mod == "Burlas" then
+		tfm.exec.newGame(burlas)
+	elseif mod == "WallJump" then
+		tfm.exec.newGame(wj)
+	elseif mod == "RcDef" then
+		tfm.exec.newGame(rcdef)
+	elseif mod == "P1" then
+		tfm.exec.newGame(p1)
+	elseif mod == "MIX" then
+		if mix_v then
+			tfm.exec.newGame(vanilla)
+			mix_v = false
+			mix_bc = true
+		elseif mix_bc then
+			tfm.exec.newGame(bootcamp)
+			mix_bc = false
+			mix_rc = true
+		elseif mix_rc then
+			tfm.exec.newGame'#17'
+			mix_rc = false
+			mix_wj = true
+		elseif mix_wj then
+			tfm.exec.newGame(wj)
+			mix_wj = false
+			mix_rcdef = true
+		elseif mix_rcdef then
+			tfm.exec.newGame(rcdef)
+			mix_rcdef = false
+			mix_p1 = true
+		elseif mix_p1 then
+			tfm.exec.newGame(p1)
+			mix_p1 = false
+			mix_v = true
+		end
+	elseif mod == "end" then
+		tfm.exec.newGame(backgroundTeams)
+		tfm.exec.setGameTime(99999)
+		ui.removeTextArea(16)
+		ui.removeTextArea(17)
+		tfm.exec.setUIMapName("VS")
+		gameStarted = false
+		mod = "Racing"
+		ShowStartBoard(nil)
+	end
+end
+
+function SetPlayerNameColor()
+	if team then
+		checkColor()
+		for i,v in pairs(teams.Team1) do tfm.exec.setNameColor(v, "0x"..t1C) end
+		for i,n in pairs(teams.Team2) do tfm.exec.setNameColor(n, "0x"..t2C) end
+		for i,b in pairs(teams.Team3) do tfm.exec.setNameColor(b, "0x"..t3C) end
+		for i,m in pairs(teams.Team4) do tfm.exec.setNameColor(m, "0x"..t4C) end
+		for _,admins in pairs(admin) do if diffAdminNameColor then tfm.exec.setNameColor(admins, "0x"..adminNameColor) end end
+	elseif elimination then
+		checkColor()
+		for i,v in pairs(participator) do
+			if i <= 16 then
+				tfm.exec.setNameColor(v, t1I)
+			elseif i <= 32 and i >= 17 then
+				tfm.exec.setNameColor(v, t2I)
+			elseif i <= 48 and i >= 33 then
+				tfm.exec.setNameColor(v, t3I)
+			elseif i <= 64 and i >= 49 then
+				tfm.exec.setNameColor(v, t4I)
+			end
+		end
+	end
+end
+
+function setTimeMode()
+	if mod == "Vanilla" then tfm.exec.setGameTime(110)
+	elseif mod == "Racing" then tfm.exec.setGameTime(63)
+	elseif mod == "P7" then tfm.exec.setGameTime(63)
+	elseif mod == "Bootcamp" then tfm.exec.setGameTime(110)
+	elseif mod == "Burlas" then tfm.exec.setGameTime(63)
+	elseif mod == "WallJump" then tfm.exec.setGameTime(48)
+	elseif mod == "RcDef" then tfm.exec.setGameTime(63)
+	elseif mod == "P1" then tfm.exec.setGameTime(63)
+	elseif mod == "MIX" then tfm.exec.setGameTime(110)
+	elseif mod == "end" then tfm.exec.setGameTime(13)
+	elseif mod == nil then mod = "Racing" tfm.exec.setGameTime(63)
+	end
+end
+
+function SetMapName()
+	local adminNames = ""
+	local ladmin = nil
+	for n,p in pairs(tfm.get.room.playerList) do
+		if n == adminName then
+			ladmin = adminName
+		end
+	end
+	if admin[1] ~= admin[2] and ladmin ~= nil then
+		adminNames = admin[1]..", "..admin[2]
+	else adminNames = admin[1] end
+	local name = "<font color='#"..adminNameColor.."'>"..adminNames.."</font>"
+	local npN4 = "		<font color='#"..t1C .."'>"..t1N..": "..p.T1.."</font>	|  <font color='#"..t2C.."'>"..t2N..": "..p.T2.."</font> |	<font color='#"..t3C.."'>"..t3N..": "..p.T3.."</font>  |  <font color='#"..t4C.."'>"..t4N..": "..p.T4.."</font>	 |	<n>D: "..win.."</n>"
+	local npN2 = "			<font color='#"..t1C .."'>" ..t1N ..": ".. p.T1 .."</font>	|  <font color='#" ..t2C .."'>" ..t2N ..": "..p.T2.."</font>  |	 <n>D: " ..win.."</n>"
+	if gameStarted then
+		if team then
+			if fourteams then tfm.exec.setUIMapName("@"..mod..npN4)
+			else tfm.exec.setUIMapName("@"..mod..npN2)
+			end
+		elseif elimination then
+			tfm.exec.setUIMapName("Elimination | Participators: "..#participator.."/"..totalParticipations)
+		end
+	else
+		if team then
+			tfm.exec.setUIMapName("<b>@"..name.." | #Teams")
+		elseif elimination then
+			tfm.exec.setUIMapName("<b>@"..name.." | #Elimination")
+		elseif ltd then
+			tfm.exec.setUIMapName("<b>@"..name.." | #L.T.D.")
+		end
+	end
+end
+
+function checkColor()
+	local c = false
+	for key,v in pairs(teamColors) do
+		if key == t1C then
+			t1C = v
+			c = true
+		elseif key == t2C then
+			t2C = v
+			c = true
+		elseif key == t3C then
+			t3C = v
+			c = true
+		elseif key == t4C then
+			t4C = v
+			c = true
+		elseif t1C == v then
+			c = true
+		elseif t2C == v then
+			c = true
+		elseif t3C == v then
+			c = true
+		elseif t4C == v then
+			c = true
+		end
+	end
+end
+
+function table.clear(t,obj) for i,v in ipairs(t) do if v==obj then table.remove(t,i) end end end
+
+function table.contain(t,obj) for i,v in pairs(t) do if v==obj then return true end end return false end
+
+function resetScore() for n,p in pairs(tfm.get.room.playerList) do tfm.exec.setPlayerScore(n, 0, false) end end
+
+function removeItem(tab, els)
+	newtab = {}
+	for i, v in pairs(tab) do
+		if v ~= els then
+			table.insert(newtab, v)
+		end
+	end
+	return newtab
+end
+
+function TeamFix(plr)
+	local char = plr
+	for i,v in pairs(teams.Team1) do if v == char then return "team1" end end
+	for i,n in pairs(teams.Team2) do if n == char then return "team2" end end
+	for i,b in pairs(teams.Team3) do if b == char then return "team3" end end
+	for i,m in pairs(teams.Team4) do if m == char then return "team4" end end
+	return false
+end
+
+function PlayerCheck(plr)
+	local playerToSerch = plr
+	for n,p in pairs(tfm.get.room.playerList) do if n == plr then return true end end
+	return false
+end
+
+function PlayerInTeam(plr)
+	local player = plr
+	for i,v in pairs(teams.Team1) do if v == player then return true end end
+	for i,n in pairs(teams.Team2) do if n == player then return true end end
+	if fourteams then
+		for i,b in pairs(teams.Team3) do if b == player then return true end end
+		for i,m in pairs(teams.Team4) do if m == player then return true end end
+	end
+	return false
+end
+
+function PlayerInParticipator(plr)
+	local player = plr
+	for p in pairs(participator) do
+		partic = participator[p]
+		if partic == player then
+			return true
+		end
+	end
+	return false
+end
+
+function ShowVot()
+	vote = {racing = 0, p7 = 0, burlas = 0, wj = 0, bootcamp = 0, vanilla = 0, rcdef = 0, p1 = 0, mix = 0}
+	ui.addTextArea(35, "<p align='center'><font size='20'>Vote</font></p>\nSelect a mode\n\n<font size='15'><a href='event:mrc'>Racing</a>\n<a href='event:mp7'>P7</a>\n<a href='event:mbr'>Burlas</a>\n<a href='event:mwj'>WallJump</a>\n<a href='event:mbc'>Bootcamp</a>\n<a href='event:mvn'>Vanilla</a>\n<a href='event:mrcdef'>RcDef</a>\n<a href='event:mp1'>P1</a>\n<a href='event:mmix'>Mix</a></font>", nil, 300, 100, 200, 220, 0x000001, 0x000001, 0.7, true)
+end
+
+function ShowVotSkipRt()
+	vote = {skip = 0, rt = 0}
+	ui.addTextArea(37, "<p align='center'><font size='20'>Vote</font></p><font size='15'><a href='event:skip'>Skip</a>\n<a href='event:rt'>Repeat</a></font>", nil, 300, 25, 200, 80, 0x000001, 0x000001, 0.3, true)
+end
+
+function newElimination(name)
+	team = false
+	ltd = false
+	for i=0, 100,1 do ui.removeTextArea(i+1) end
+	--[[
+	ui.removeTextArea(41)
+	ui.removeTextArea(42)
+	ui.removeTextArea(43)
+	]]--
+	tfm.exec.newGame(backgroundElims)
+	runElim(name)
+end
+
+function runElim(name)
+	ShowModes(name)
+	ui.addTextArea(229, "<p align='center'><a href='event:participate'>Participate</a>", name, 340, 30, 120, 20, 0x000000, 0x000001, 0.3, true)
+	ui.addTextArea(211, "<p align='center'><font size='12'>"..(table.concat(table.slice(participator, 1, 16, 1), "\n")), name, 210, 66, 151, 254, 0x000001, t1I, 0.6, true)
+	ui.addTextArea(212, "<p align='center'><font size='12'>"..(table.concat(table.slice(participator, 17, 32, 1), "\n")), name, 439, 66, 151, 254, 0x000001, t2I, 0.6, true)
+	ui.addTextArea(213, "<p align='center'><font size='12'>"..(table.concat(table.slice(participator, 33, 48, 1), "\n")), name, 40, 66, 151, 254, 0x000001, t3I, 0.6, true)
+	ui.addTextArea(214, "<p align='center'><font size='12'>"..(table.concat(table.slice(participator, 49, 64, 1), "\n")), name, 610, 66, 151, 254, 0x000001, t4I, 0.6, true)
+	ui.addTextArea(201, "<p align='center'><b><font size='9' color='#"..t3C.."'>Batch 1</b></p>", name, 55, 40, 125, 15, 0, true)
+	ui.addTextArea(202, "<p align='center'><b><font size='9' color='#"..t1C.."'>Batch 2</b></p>", name, 225, 40, 125, 15, 0, true)
+	ui.addTextArea(203, "<p align='center'><b><font size='9' color='#"..t2C.."'>Batch 3</b></p>", name, 455, 40, 125, 15, 0, true)
+	ui.addTextArea(204, "<p align='center'><b><font size='9' color='#"..t4C.."'>Batch 4</b></p>", name, 625, 40, 125, 15, 0, true)
+
+	elimination = false
+	ShowStartBoard(nil)
+	elimination = true
+	ui.addTextArea(239, "<p align='center'><b><a href='event:teams'>Teams", name, 600, 337.5, 200, 20, 0x000000, 0x000000, 0, true)
+end
+
+function newLTD(name)
+	team = false
+	elimination = false
+	for i=0, 100,1 do ui.removeTextArea(i+1) end
+	tfm.exec.newGame(backgroundTeams)
+	runLTD(name)
+end
+
+function runLTD(name)
+	ShowModes(name)
+
+	ltd = false
+	ShowStartBoard(nil)
+	ltd = true
+	ui.addTextArea(239, "<p align='center'><b><a href='event:teams'>Teams", name, 600, 337.5, 200, 20, 0x000000, 0x000000, 0, true)
+end
+
+function split (inputstr, sep)
+	if sep == nil then
+		sep = "%s"
+	end
+	local t={}
+	for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+		table.insert(t, str)
+	end
+	return t
+end
+
+function hrefLayer(layer, sep)
+	list = split(layer, sep)
+	val = ""
+	newlist = {}
+	for i in pairs(list) do
+		item = "<a href='event:"..list[i].."'>"..list[i].."</a>"
+		print(item)
+		table.insert(newlist, item)
+	end
+
+	for i in pairs(newlist) do
+		val = val..newlist[i].."\n"
+	end
+	return val
+end
+
+function kickingPlayers(name)
+	layer1 = (table.concat(table.slice(participator, 1, 16, 1), "\n"))
+	layer2 = (table.concat(table.slice(participator, 17, 32, 1), "\n"))
+	layer3 = (table.concat(table.slice(participator, 33, 48, 1), "\n"))
+	layer4 = (table.concat(table.slice(participator, 49, 64, 1), "\n"))
+
+	layer1 = hrefLayer(layer1, "\n")
+	layer2 = hrefLayer(layer2, "\n")
+	layer3 = hrefLayer(layer3, "\n")
+	layer4 = hrefLayer(layer4, "\n")
+	ui.addTextArea(215, "<p align='center'><font size='12'>"..layer1, name, 40, 66, 151, 254, 0x000001, 0x303030, 0.3, true)
+	ui.addTextArea(216, "<p align='center'><font size='12'>"..layer2, name, 210, 66, 151, 254, 0x000001, 0x303030, 0.3, true)
+	ui.addTextArea(217, "<p align='center'><font size='12'>"..layer3, name, 439, 66, 151, 254, 0x000001, 0x303030, 0.3, true)
+	ui.addTextArea(218, "<p align='center'><font size='12'>"..layer4, name, 610, 66, 151, 254, 0x000001, 0x303030, 0.3, true)
+end
+
+function ShowModes(name)
+	ui.addTextArea(1000, "", name, 368, 65, 64, 258, 0x000001, 0x000000, 0.3, true)
+	ui.addTextArea(8, "<p align='center'><b><a href='event:vn'>Vanilla</a>", name, 365, 198, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(9, "<p align='center'><b><a href='event:rc'>Racing</a>", name, 365, 90, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(18, "<p align='center'><b><a href='event:bc'>Bootcamp</a>", name, 365, 171, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(20, "<p align='center'><b><a href='event:brc'>Burlas</a>", name, 365, 117, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(22, "<p align='center'><b><a href='event:wj'>WallJump</a>", name, 365, 144, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(31, "<p align='center'><b><a href='event:rcdef'>RcDef</a>", name, 365, 225, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(32, "<p align='center'><b><a href='event:p7'>P7</a>", name, 365, 63, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(30, "<p align='center'><b><a href='event:p1'>P1</a>", name, 365, 252, 69, 20, 0x000001, 0x000001, 0, true)
+	ui.addTextArea(21, "<p align='center'><b><a href='event:mix'>MIX</a>", name, 365, 279, 69, 20, 0x000001, 0x000001, 0, true)
+end
+
+function ShowStartBoard(name)
+	for i, v in pairs(panelPlayers) do
+		ShowPanel(v)
+	end
+
+	local admins = "None"
+	local ladmin = nil
+	local text = "Admin"
+	for n,p in pairs(tfm.get.room.playerList) do
+		if n == adminName then
+			ladmin = adminName
+		end
+	end
+	if admin[1] ~= admin[2] and ladmin ~= nil then
+		admins = admin[1]..", "..admin[2]
+		text = "Admins"
+	elseif admin[1] == admin[2] then
+		admins = admin[1]
+	else admins = admin[1]
+	end
+
+	if not gameStarted then
+		ui.addTextArea(41, "<p align='center'>", name, 10, 330, 780, 60, 0x000001, 0x000000, 0.7, true)
+		if team then
+			for n, p in pairs(teams.Team1) do
+				tfm.exec.setNameColor(p, t1I)
+			end
+			for n, p in pairs(teams.Team2) do
+				tfm.exec.setNameColor(p, t2I)
+			end
+			for n, p in pairs(teams.Team3) do
+				tfm.exec.setNameColor(p, t3I)
+			end
+			for n, p in pairs(teams.Team4) do
+				tfm.exec.setNameColor(p, t4I)
+			end
+			ui.addTextArea(1, "", name, 209, 33, 381, 326, 0x000000, 0x000000, 1, true)
+			ui.addTextArea(2, "<p align='center'><font size='12' color='#" ..t1C  .."'>"..(table.concat(teams.Team1,"\n", 1, math.min(17, #teams.Team1)) or ""), name, 210, 66, 151, 254, 0x000001, t1I, 0.6, true)
+			ui.addTextArea(3, "<p align='center'><font size='12' color='#" ..t2C .."'> "..(table.concat(teams.Team2,"\n", 1, math.min(17, #teams.Team2)) or ""), name, 439, 66, 151, 254, 0x000001, t2I, 0.6, true)
+			if fourteams then
+			ui.removeTextArea(2)
+			ui.removeTextArea(3)
+			ui.addTextArea(23, "<p align='center'><font size='12' color='#" ..t1C .."'>"..(table.concat(teams.Team1,"\n", 1, math.min(17, #teams.Team1)) or ""), name, 210, 66, 151, 254, 0x000001, t1I, 0.6, true)
+			ui.addTextArea(33, "<p align='center'><font size='12' color='#" ..t2C .."'>"..(table.concat(teams.Team2,"\n", 1, math.min(17, #teams.Team2)) or ""), name, 439, 66, 151, 254, 0x000001, t2I, 0.6, true)
+			ui.addTextArea(24, "<p align='center'><font size='12' color='#" ..t3C .."'>"..(table.concat(teams.Team3,"\n", 1, math.min(17, #teams.Team3)) or ""), name, 40, 66, 151, 254, 0x000001, t3I, 0.6, true)
+			ui.addTextArea(25, "<p align='center'><font size='12' color='#" ..t4C .."'>"..(table.concat(teams.Team4,"\n", 1, math.min(17, #teams.Team4)) or ""), name, 610, 66, 151, 254, 0x000001, t4I, 0.6, true)
+			ui.addTextArea(26, "<font color='#"..t3C.."'><font size='9'><p align='center'><b>"..t3N.."</b></p>/font>", name, 55, 40, 125, 15, 0x000001, 0x000000, 0, true)
+			ui.addTextArea(27, "<font color='#"..t4C.."'><font size='9'><p align='center'><b>"..t4N.."</b></p>/font>", name, 620, 40, 125, 15, 0x000001, 0x000000, 0, true)
+			elseif not fourteams then
+			ui.removeTextArea(23)
+			ui.removeTextArea(24)
+			ui.removeTextArea(25)
+			ui.removeTextArea(26)
+			ui.removeTextArea(27)
+			ui.removeTextArea(33)
+			end
+			ui.addTextArea(4, "<p align='center'><b>Mode: " ..(mod or "Racing"), name, 620, 368, 150, 19, 0x000000, 0x000001, 0.6, true)
+			ui.addTextArea(5, "<font size='12'><p align='center'><b>\\ VS /", name, 325, 36, 150, 21, 0x000001, 0x000000, 0.3, true)
+			ui.addTextArea(6, "<font color='#"..t1C.."'><font size='9'><p align='center'><b>"..t1N.."</b></p>/font>", name, 225, 40, 125, 15, 0x000001, 0x000000, 0, true)
+			ui.addTextArea(7, "<font color='#"..t2C.."'><font size='9'><p align='center'><b>"..t2N.."</b></p>/font>", name, 450, 40, 125, 15, 0x000001, 0x000000, 0, true)
+			ShowModes(name)
+			ui.addTextArea(10, "<p align='center'><font size='16'><b><a href='event:start'>Start</a>", name, 359, 330, 82, 23, 0x000001, 0xFCFF5A, 0, true)
+			ui.addTextArea(11, "<p align='center'><b>Score: <a href='event:dec'>-</a> "..win.." <a href='event:inc'>+</a>", name, 460, 345, 95, 20, 0x000001, 0x000000, 0, true)
+			ui.addTextArea(12, "<p align='center'><b>Auto Join: <a href='event:OnAndOff'>"..(autoJoin and "<font color='#5ECE52'>on</font>" or not autoJoin and "<font color='#CE5252'>off</font>").."</a>", name, 245, 345, 0, 0, 0x000001, 0x000000, 0, true)
+			ui.addTextArea(15, "<p align='center'><b><a href='event:Fill'>Fill</a>", name, 205, 345, 47, 20, 0x000001, 0x000000, 0, true)
+			ui.addTextArea(19, "<p align='center'><b>Teams: <a href='event:nteams'>"..(not fourteams and "2 (or 4)" or fourteams and "4 (or 2)") .."</a>", name, 345, 352.5, 0, 0, 0x000001, 0x000000, 0, true)
+			ui.addTextArea(39, "<p align='center'><b><a href='event:elimination'>Elimination", name, 600, 337.5, 0, 0, 0x000000, 0x000000, 0, true)
+			ui.addTextArea(40, "<p align='center'><b><a href='event:ltd'>L.T.D.", name, 600, 360, 0, 0, 0x000000, 0x000000, 0, true)
+			ui.addTextArea(88888, "<p align='center'><b><a href='event:panel'>Panel</b>", name, 92.5, -25, 50, 18, 0x000001, 0x000000, 0.3, true)
+			-- <a href='panel'>
+		elseif elimination == true then
+			team = false
+			ltd = false
+			for i,v in pairs(participator) do
+				if i <= 16 then
+					tfm.exec.setNameColor(v, t1I)
+				elseif i <= 32 and i >= 17 then
+					tfm.exec.setNameColor(v, t2I)
+				elseif i <= 48 and i >= 33 then
+					tfm.exec.setNameColor(v, t3I)
+				elseif i <= 64 and i >= 49 then
+					tfm.exec.setNameColor(v, t4I)
+				end
+			end
+			runElim(nil)
+
+		elseif ltd then
+			team = false
+			elimination = false
+			runLTD(nil)
+		end
+
+		ui.addTextArea(80, "<p align='center'><b>Respawn: <a href='event:rOnandOff'>"..(respawn and "<font color='#5ECE52'>on</font>" or not respawn and "<font color='#CE5252'>off</font>").."</a>", name, 235, 365, 0, 0, 0x000001, 0x000000, 0, true)
+		ui.addTextArea(0, "<p align='center'><b>"..text..": <font color='#"..adminNameColor.."'><b>"..admins, name, 263, 370, 265, 20, 0x000000, 0x000000, 0.8, true)
+		ui.addTextArea(42, "<p align='center'><b> By: <font color='#"..t3C.."'><font size='10'><p align='center'><b>Zeroo#7497</b></p></font>", name, 10, 325, 100, 50, 0x000000, 0x000000, 0, true)
+		ui.addTextArea(43, "<p align='center'><b> Version: 0.9.1", name, 100, 338, 100, 50, 0x000000, 0x000000, 0, true)
+		ui.addTextArea(10, "<p align='center'><font size='16'><b><a href='event:start'>Start</a>", name, 359, 330, 82, 23, 0x000001, 0xFCFF5A, 0, true)
+		ui.addTextArea(15, "<p align='center'><b><a href='event:Fill'>Fill</a>", name, 205, 345, 47, 20, 0x000001, 0x000000, 0, true)
+		ui.addTextArea(4, "<p align='center'><b>Mode: " ..(mod or "Racing"), name, 50, 368, 150, 19, 0x000000, 0x000001, 0.5, true)
+	end
+end
+
+main()
